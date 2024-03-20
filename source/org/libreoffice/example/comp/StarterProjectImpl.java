@@ -1,13 +1,18 @@
 package org.libreoffice.example.comp;
 
+import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.lib.uno.helper.Factory;
 
 import org.libreoffice.example.dialog.ActionOneDialog;
 import org.libreoffice.example.helper.DialogHelper;
 
+import com.sun.star.frame.XDesktop;
+import com.sun.star.lang.XMultiServiceFactory;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.registry.XRegistryKey;
+import com.sun.star.text.XTextCursor;
+import com.sun.star.text.XTextDocument;
 import com.sun.star.lib.uno.helper.WeakBase;
 
 
@@ -64,8 +69,19 @@ public final class StarterProjectImpl extends WeakBase
     {
     	switch (action) {
     	case "actionOne":
-    		ActionOneDialog actionOneDialog = new ActionOneDialog(m_xContext);
-    		actionOneDialog.show();
+    		var factory = (XMultiServiceFactory) UnoRuntime.queryInterface(XMultiServiceFactory.class, m_xContext.getServiceManager());
+    		try {
+    			var desktop = (XDesktop) UnoRuntime.queryInterface(XDesktop.class, 
+    				factory.createInstance("com.sun.star.frame.Desktop"));
+	    		var component = desktop.getCurrentComponent();
+	    		var textDocument = (XTextDocument) UnoRuntime.queryInterface(XTextDocument.class, component);
+	    		var text = textDocument.getText();
+	    		var cursor = text.createTextCursor();
+	    		cursor.gotoEnd(false);
+	    		cursor.goLeft((short) 1, true);
+	    		cursor.setString("𝜇");
+	    		cursor.setString("test");
+    		} catch (Exception e) {}
     		break;
     	default:
     		DialogHelper.showErrorMessage(m_xContext, null, "Unknown action: " + action);
